@@ -1,0 +1,2267 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ping Pong</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        .game-container {
+            background: #1a1a2e;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        .game-title {
+            color: #fff;
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .menu {
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .menu-button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            margin: 10px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .menu-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .difficulty-buttons {
+            margin-top: 20px;
+        }
+        
+        .difficulty-button {
+            background: #2c3e50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .difficulty-button.easy:hover { background: #27ae60; }
+        .difficulty-button.medium:hover { background: #f39c12; }
+        .difficulty-button.hard:hover { background: #e74c3c; }
+        
+        .difficulty-button.active {
+            background: #f1c40f;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        
+        .controls {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+        
+        #gameCanvas {
+            border: 3px solid #fff;
+            border-radius: 10px;
+            background: #0f0f23;
+            display: block;
+        }
+        
+        .score {
+            color: #fff;
+            text-align: center;
+            font-size: 1.5rem;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        
+        .back-button {
+            background: #34495e;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin-top: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .back-button:hover {
+            background: #2c3e50;
+        }
+        
+        .settings-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #f1c40f;
+            color: #2c3e50;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(241, 196, 15, 0.3);
+        }
+        
+        .settings-button:hover {
+            background: #f39c12;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(241, 196, 15, 0.4);
+        }
+        
+        .settings-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .settings-panel {
+            background: #1a1a2e;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            color: white;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        
+        .settings-title {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: #f1c40f;
+        }
+        
+        .setting-group {
+            margin-bottom: 25px;
+        }
+        
+        .setting-label {
+            display: block;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #ecf0f1;
+        }
+        
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .volume-slider {
+            flex: 1;
+            height: 8px;
+            background: #34495e;
+            border-radius: 5px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #f1c40f;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .volume-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #f1c40f;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .volume-value {
+            font-weight: bold;
+            color: #f1c40f;
+            min-width: 40px;
+        }
+        
+        .background-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .bg-option {
+            width: 80px;
+            height: 50px;
+            border: 3px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .bg-option:hover {
+            transform: scale(1.05);
+            border-color: #f1c40f;
+        }
+        
+        .bg-option.active {
+            border-color: #f1c40f;
+            box-shadow: 0 0 15px rgba(241, 196, 15, 0.5);
+        }
+        
+        .bg-option.gradient1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .bg-option.gradient2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .bg-option.gradient3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .bg-option.gradient4 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .bg-option.gradient5 { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .bg-option.gradient6 { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
+        .bg-option.gradient7 { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
+        .bg-option.gradient8 { background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); }
+        .bg-option.gradient9 { background: linear-gradient(135deg, #ff8a80 0%, #ea80fc 100%); }
+        .bg-option.gradient10 { background: linear-gradient(135deg, #8fd3f4 0%, #84fab0 100%); }
+        .bg-option.dark { background: #1a1a2e; }
+        .bg-option.space { background: radial-gradient(ellipse at center, #0c0c0c 0%, #1a1a2e 50%, #000 100%); }
+        
+        .settings-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(231, 76, 60, 0.3);
+        }
+        
+        .settings-close:hover {
+            background: #c0392b;
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.5);
+        }
+        
+        .customize-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #9b59b6;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(155, 89, 182, 0.3);
+            z-index: 100;
+        }
+        
+        .customize-button:hover {
+            background: #8e44ad;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(155, 89, 182, 0.4);
+        }
+        
+        .countdown {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 8rem;
+            font-weight: bold;
+            color: #f1c40f;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            z-index: 1000;
+            animation: countdownPulse 1s ease-in-out;
+        }
+        
+        @keyframes countdownPulse {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+        
+        .customize-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .customize-panel {
+            background: #1a1a2e;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 450px;
+            width: 90%;
+            color: white;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        
+        .customize-title {
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            color: #9b59b6;
+        }
+        
+        .color-group {
+            margin-bottom: 20px;
+        }
+        
+        .color-label {
+            display: block;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            color: #ecf0f1;
+        }
+        
+        .color-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border: 3px solid transparent;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .color-option:hover {
+            transform: scale(1.1);
+            border-color: #9b59b6;
+        }
+        
+        .color-option.active {
+            border-color: #9b59b6;
+            box-shadow: 0 0 15px rgba(155, 89, 182, 0.5);
+        }
+        
+        .customize-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(231, 76, 60, 0.3);
+        }
+        
+        .customize-close:hover {
+            background: #c0392b;
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.5);
+        }
+        
+        /* Styles pour le menu déroulant */
+        .dropdown-container {
+            margin-bottom: 25px;
+        }
+        
+        .dropdown-header {
+            background: #2c3e50;
+            border: 2px solid #34495e;
+            border-radius: 10px;
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        
+        .dropdown-header:hover {
+            background: #34495e;
+            border-color: #9b59b6;
+            transform: translateY(-1px);
+        }
+        
+        .dropdown-arrow {
+            transition: transform 0.3s ease;
+            font-size: 1.2rem;
+            color: #9b59b6;
+        }
+        
+        .dropdown-header.active .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+        
+        .dropdown-menu {
+            background: #34495e;
+            border-radius: 10px;
+            margin-top: 5px;
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .dropdown-menu.open {
+            max-height: 400px;
+        }
+        
+        .dropdown-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #2c3e50;
+            font-size: 1rem;
+        }
+        
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+        
+        .dropdown-item:hover {
+            background: #9b59b6;
+            padding-left: 25px;
+        }
+        
+        /* Zone de personnalisation */
+        .customization-area {
+            min-height: 200px;
+            background: #2c3e50;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .customization-section {
+            display: none;
+        }
+        
+        .customization-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Styles pour les curseurs */
+        .slider-container {
+            margin: 20px 0;
+        }
+        
+        .slider-label {
+            display: block;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: #ecf0f1;
+            font-weight: bold;
+        }
+        
+        .custom-slider {
+            width: 100%;
+            height: 8px;
+            background: #34495e;
+            border-radius: 5px;
+            outline: none;
+            -webkit-appearance: none;
+            margin-bottom: 10px;
+        }
+        
+        .custom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            background: #9b59b6;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(155, 89, 182, 0.3);
+            transition: all 0.2s ease;
+        }
+        
+        .custom-slider::-webkit-slider-thumb:hover {
+            background: #8e44ad;
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(155, 89, 182, 0.5);
+        }
+        
+        .custom-slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            background: #9b59b6;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(155, 89, 182, 0.3);
+        }
+        
+        .slider-marks {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #bdc3c7;
+            margin-top: 5px;
+        }
+        
+        /* Styles pour les interrupteurs */
+        .toggle-container {
+            margin: 20px 0;
+        }
+        
+        .toggle-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: #ecf0f1;
+            font-weight: bold;
+        }
+        
+        .toggle-label input[type="checkbox"] {
+            display: none;
+        }
+        
+        .toggle-slider {
+            width: 50px;
+            height: 26px;
+            background: #34495e;
+            border-radius: 13px;
+            margin-right: 15px;
+            position: relative;
+            transition: background 0.3s ease;
+        }
+        
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: #ecf0f1;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s ease;
+        }
+        
+        .toggle-label input[type="checkbox"]:checked + .toggle-slider {
+            background: #9b59b6;
+        }
+        
+        .toggle-label input[type="checkbox"]:checked + .toggle-slider::before {
+            transform: translateX(24px);
+        }
+        
+        /* Grille d'effets */
+        .effects-grid {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .effect-option {
+            background: #34495e;
+            border-radius: 8px;
+            padding: 15px;
+            transition: all 0.2s ease;
+        }
+        
+        .effect-option:hover {
+            background: #3a5169;
+            transform: translateY(-1px);
+        }
+        
+        /* Styles pour les lignes */
+        .line-styles {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+        }
+        
+        .line-option {
+            background: #34495e;
+            border: 2px solid transparent;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .line-option:hover {
+            border-color: #9b59b6;
+            transform: translateY(-2px);
+        }
+        
+        .line-option.active {
+            border-color: #9b59b6;
+            background: #3a5169;
+        }
+        
+        .line-preview {
+            width: 100%;
+            height: 4px;
+            margin-bottom: 10px;
+            background: #ecf0f1;
+        }
+        
+        .line-preview.dashed {
+            background: repeating-linear-gradient(
+                to right,
+                #ecf0f1 0px,
+                #ecf0f1 10px,
+                transparent 10px,
+                transparent 20px
+            );
+        }
+        
+        .line-preview.solid {
+            background: #ecf0f1;
+        }
+        
+        .line-preview.dots {
+            background: repeating-linear-gradient(
+                to right,
+                #ecf0f1 0px,
+                #ecf0f1 4px,
+                transparent 4px,
+                transparent 12px
+            );
+        }
+        
+        .line-preview.none {
+            background: transparent;
+            border: 1px dashed #7f8c8d;
+        }
+        
+        .line-option span {
+            font-size: 0.9rem;
+            color: #ecf0f1;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <button class="settings-button" onclick="showSettings()">⚙️ Paramètres</button>
+        <h1 class="game-title">🏓 PING PONG</h1>
+        
+        <div id="mainMenu" class="menu">
+            <h2>Choisissez votre mode de jeu</h2>
+            <button class="menu-button" onclick="startPvP()">🎮 1 vs 1</button>
+            <button class="menu-button" onclick="showBotMenu()">🤖 Contre Bot</button>
+        </div>
+        
+        <div id="botMenu" class="menu" style="display: none;">
+            <h2>Choisissez le niveau du Bot</h2>
+            
+            <div style="margin: 30px 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <span style="color: #27ae60; font-weight: bold;">😴 Très Facile</span>
+                    <span id="botLevelDisplay" style="color: #f1c40f; font-size: 1.3rem; font-weight: bold;">Niveau 5 - Normal</span>
+                    <span style="color: #e74c3c; font-weight: bold;">🔥 Impossible</span>
+                </div>
+                
+                <div style="position: relative; margin: 20px 0;">
+                    <input type="range" id="botLevelSlider" class="volume-slider" min="1" max="12" value="5" 
+                           oninput="updateBotLevel(this.value)" 
+                           style="width: 100%; height: 12px; background: linear-gradient(to right, #27ae60 0%, #f1c40f 50%, #e74c3c 100%);">
+                    
+                    <!-- Marqueurs de niveau -->
+                    <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.8rem; color: #bdc3c7;">
+                        <span style="color: #27ae60;">1</span>
+                        <span>2</span>
+                        <span style="color: #2ecc71;">3</span>
+                        <span>4</span>
+                        <span style="color: #f1c40f;">5</span>
+                        <span>6</span>
+                        <span style="color: #e67e22;">7</span>
+                        <span>8</span>
+                        <span>9</span>
+                        <span style="color: #e74c3c;">10</span>
+                        <span>11</span>
+                        <span style="color: #c0392b;">12</span>
+                    </div>
+                </div>
+                
+                <div id="botLevelDescription" style="text-align: center; color: #ecf0f1; font-size: 1rem; margin-top: 15px; min-height: 40px;">
+                    Le bot joue de manière équilibrée avec quelques erreurs occasionnelles.
+                </div>
+            </div>
+            
+            <button class="menu-button" onclick="showBotConfig()">🎮 Configurer la partie</button>
+            <button class="back-button" onclick="showMainMenu()">← Retour</button>
+        </div>
+        
+        <div id="botConfigMenu" class="menu" style="display: none;">
+            <h2 id="botConfigTitle">Configuration - Bot Niveau 5</h2>
+            
+            <div style="margin: 20px 0;">
+                <h3 style="color: #f1c40f; margin-bottom: 15px;">🎯 Points pour gagner une partie</h3>
+                <div class="difficulty-buttons">
+                    <button class="difficulty-button" onclick="selectPoints(5)" id="points5">5 points</button>
+                    <button class="difficulty-button active" onclick="selectPoints(7)" id="points7">7 points</button>
+                    <button class="difficulty-button" onclick="selectPoints(10)" id="points10">10 points</button>
+                    <button class="difficulty-button" onclick="selectPoints(15)" id="points15">15 points</button>
+                </div>
+            </div>
+            
+            <div style="margin: 20px 0;">
+                <h3 style="color: #f1c40f; margin-bottom: 15px;">🏆 Parties pour gagner le match</h3>
+                <div class="difficulty-buttons">
+                    <button class="difficulty-button active" onclick="selectMatches(1)" id="matches1">1 partie</button>
+                    <button class="difficulty-button" onclick="selectMatches(3)" id="matches3">3 parties</button>
+                    <button class="difficulty-button" onclick="selectMatches(5)" id="matches5">5 parties</button>
+                </div>
+            </div>
+            
+            <div style="margin-top: 30px;">
+                <button class="menu-button" onclick="startBotWithConfig()">🚀 Commencer la partie</button>
+            </div>
+            
+            <button class="back-button" onclick="showBotMenu()">← Retour</button>
+        </div>
+        
+        <div id="pvpConfigMenu" class="menu" style="display: none;">
+            <h2>Configuration - 1 vs 1</h2>
+            
+            <div style="margin: 20px 0;">
+                <h3 style="color: #f1c40f; margin-bottom: 15px;">🎯 Points pour gagner une partie</h3>
+                <div class="difficulty-buttons">
+                    <button class="difficulty-button" onclick="selectPointsPvP(5)" id="pvpPoints5">5 points</button>
+                    <button class="difficulty-button active" onclick="selectPointsPvP(7)" id="pvpPoints7">7 points</button>
+                    <button class="difficulty-button" onclick="selectPointsPvP(10)" id="pvpPoints10">10 points</button>
+                    <button class="difficulty-button" onclick="selectPointsPvP(15)" id="pvpPoints15">15 points</button>
+                </div>
+            </div>
+            
+            <div style="margin: 20px 0;">
+                <h3 style="color: #f1c40f; margin-bottom: 15px;">🏆 Parties pour gagner le match</h3>
+                <div class="difficulty-buttons">
+                    <button class="difficulty-button active" onclick="selectMatchesPvP(1)" id="pvpMatches1">1 partie</button>
+                    <button class="difficulty-button" onclick="selectMatchesPvP(3)" id="pvpMatches3">3 parties</button>
+                    <button class="difficulty-button" onclick="selectMatchesPvP(5)" id="pvpMatches5">5 parties</button>
+                </div>
+            </div>
+            
+            <div style="margin-top: 30px;">
+                <button class="menu-button" onclick="startPvPWithConfig()">🚀 Commencer la partie</button>
+            </div>
+            
+            <button class="back-button" onclick="showMainMenu()">← Retour</button>
+        </div>
+        
+        <div id="gameArea" style="display: none;">
+            <button class="customize-button" onclick="showCustomize()" style="display: none;">🎨 Personnaliser</button>
+            <div id="countdown" class="countdown" style="display: none;"></div>
+            <div class="controls" id="gameControls">
+                Joueur 1: S/W | Joueur 2: ↑/↓ | Premier à 7 points gagne! | Échap: Menu
+            </div>
+            <canvas id="gameCanvas" width="800" height="400"></canvas>
+            <div class="score">
+                <div style="margin-bottom: 10px; font-size: 1rem; color: #ccc;">
+                    Parties gagnées: <span id="player1Matches">0</span> - <span id="player2Matches">0</span>
+                </div>
+                <div>
+                    Points: <span id="player1Score">0</span> - <span id="player2Score">0</span>
+                </div>
+            </div>
+            <button class="back-button" onclick="showMainMenu()">← Retour au menu</button>
+        </div>
+        
+        <!-- Menu des paramètres -->
+        <div id="settingsMenu" class="settings-menu" onclick="closeOnOutsideClick(event, 'settingsMenu')">
+            <div class="settings-panel" onclick="event.stopPropagation()">
+                <h2 class="settings-title">⚙️ Paramètres</h2>
+                
+                <div class="setting-group">
+                    <label class="setting-label">🔊 Volume du son</label>
+                    <div class="volume-control">
+                        <span>🔇</span>
+                        <input type="range" id="volumeSlider" class="volume-slider" min="0" max="100" value="50" oninput="updateVolume(this.value)">
+                        <span>🔊</span>
+                        <span id="volumeValue" class="volume-value">50%</span>
+                    </div>
+                </div>
+                
+                <div class="setting-group">
+                    <label class="setting-label">🏏 Sensibilité des raquettes</label>
+                    <div class="volume-control">
+                        <span>🐌</span>
+                        <input type="range" id="sensitivitySlider" class="volume-slider" min="10" max="150" value="50" oninput="updateSensitivity(this.value)">
+                        <span>🚀</span>
+                        <span id="sensitivityValue" class="volume-value">50%</span>
+                    </div>
+                </div>
+                
+                <div class="setting-group">
+                    <label class="setting-label">🎨 Arrière-plan</label>
+                    <div class="background-options">
+                        <div class="bg-option gradient1 active" onclick="changeBackground('gradient1')" title="Bleu-Violet"></div>
+                        <div class="bg-option gradient2" onclick="changeBackground('gradient2')" title="Rose-Rouge"></div>
+                        <div class="bg-option gradient3" onclick="changeBackground('gradient3')" title="Bleu-Cyan"></div>
+                        <div class="bg-option gradient4" onclick="changeBackground('gradient4')" title="Vert-Turquoise"></div>
+                        <div class="bg-option gradient5" onclick="changeBackground('gradient5')" title="Rose-Jaune"></div>
+                        <div class="bg-option gradient6" onclick="changeBackground('gradient6')" title="Orange-Rouge"></div>
+                        <div class="bg-option gradient7" onclick="changeBackground('gradient7')" title="Violet-Bleu"></div>
+                        <div class="bg-option gradient8" onclick="changeBackground('gradient8')" title="Vert-Bleu"></div>
+                        <div class="bg-option gradient9" onclick="changeBackground('gradient9')" title="Jaune-Orange"></div>
+                        <div class="bg-option gradient10" onclick="changeBackground('gradient10')" title="Rouge-Violet"></div>
+                        <div class="bg-option dark" onclick="changeBackground('dark')" title="Sombre"></div>
+                        <div class="bg-option space" onclick="changeBackground('space')" title="Espace"></div>
+                    </div>
+                </div>
+                
+                <button class="settings-close" onclick="hideSettings()">×</button>
+            </div>
+        </div>
+        
+        <!-- Menu de personnalisation en jeu -->
+        <div id="customizeMenu" class="customize-menu" onclick="closeOnOutsideClick(event, 'customizeMenu')">
+            <div class="customize-panel" onclick="event.stopPropagation()">
+                <h2 class="customize-title">🎨 Personnalisation</h2>
+                
+                <!-- Menu déroulant principal -->
+                <div class="dropdown-container">
+                    <div class="dropdown-header" onclick="toggleDropdown('customizeDropdown')">
+                        <span id="selectedCustomization">🏓 Couleur de la balle</span>
+                        <span class="dropdown-arrow">▼</span>
+                    </div>
+                    
+                    <div id="customizeDropdown" class="dropdown-menu">
+                        <div class="dropdown-item" onclick="selectCustomization('ball', '🏓 Couleur de la balle')">🏓 Couleur de la balle</div>
+                        <div class="dropdown-item" onclick="selectCustomization('paddle1', '🏏 Couleur raquette Joueur 1')">🏏 Couleur raquette Joueur 1</div>
+                        <div class="dropdown-item" onclick="selectCustomization('paddle2', '🏏 Couleur raquette Joueur 2')">🏏 Couleur raquette Joueur 2</div>
+                        <div class="dropdown-item" onclick="selectCustomization('canvas', '🎮 Couleur fond du terrain')">🎮 Couleur fond du terrain</div>
+                        <div class="dropdown-item" onclick="selectCustomization('ballSize', '⚽ Taille de la balle')">⚽ Taille de la balle</div>
+                        <div class="dropdown-item" onclick="selectCustomization('paddleSize', '📏 Taille des raquettes')">📏 Taille des raquettes</div>
+                        <div class="dropdown-item" onclick="selectCustomization('ballSpeed', '🚀 Vitesse de la balle')">🚀 Vitesse de la balle</div>
+                        <div class="dropdown-item" onclick="selectCustomization('ballTrail', '✨ Traînée de la balle')">✨ Traînée de la balle</div>
+                        <div class="dropdown-item" onclick="selectCustomization('gameEffects', '🎆 Effets visuels')">🎆 Effets visuels</div>
+                        <div class="dropdown-item" onclick="selectCustomization('centerLine', '➖ Style ligne centrale')">➖ Style ligne centrale</div>
+                    </div>
+                </div>
+                
+                <!-- Zone de personnalisation dynamique -->
+                <div id="customizationArea" class="customization-area">
+                    
+                    <!-- Couleurs de la balle -->
+                    <div id="ballCustomization" class="customization-section active">
+                        <div class="color-options">
+                            <div class="color-option active" style="background: #ffffff;" onclick="changeBallColor('#ffffff')" title="Blanc"></div>
+                            <div class="color-option" style="background: #f1c40f;" onclick="changeBallColor('#f1c40f')" title="Jaune"></div>
+                            <div class="color-option" style="background: #e74c3c;" onclick="changeBallColor('#e74c3c')" title="Rouge"></div>
+                            <div class="color-option" style="background: #3498db;" onclick="changeBallColor('#3498db')" title="Bleu"></div>
+                            <div class="color-option" style="background: #2ecc71;" onclick="changeBallColor('#2ecc71')" title="Vert"></div>
+                            <div class="color-option" style="background: #9b59b6;" onclick="changeBallColor('#9b59b6')" title="Violet"></div>
+                            <div class="color-option" style="background: #ff6b6b;" onclick="changeBallColor('#ff6b6b')" title="Rose"></div>
+                            <div class="color-option" style="background: #ff9500;" onclick="changeBallColor('#ff9500')" title="Orange"></div>
+                            <div class="color-option" style="background: #00d4ff;" onclick="changeBallColor('#00d4ff')" title="Cyan"></div>
+                            <div class="color-option" style="background: #ff1744;" onclick="changeBallColor('#ff1744')" title="Rouge vif"></div>
+                            <div class="color-option" style="background: #76ff03;" onclick="changeBallColor('#76ff03')" title="Vert lime"></div>
+                            <div class="color-option" style="background: #e91e63;" onclick="changeBallColor('#e91e63')" title="Rose fuchsia"></div>
+                            <div class="color-option" style="background: #ffc107;" onclick="changeBallColor('#ffc107')" title="Ambre"></div>
+                            <div class="color-option" style="background: #00bcd4;" onclick="changeBallColor('#00bcd4')" title="Turquoise"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Couleurs raquette Joueur 1 -->
+                    <div id="paddle1Customization" class="customization-section">
+                        <div class="color-options">
+                            <div class="color-option active" style="background: #00ff88;" onclick="changePaddle1Color('#00ff88')" title="Vert clair"></div>
+                            <div class="color-option" style="background: #f1c40f;" onclick="changePaddle1Color('#f1c40f')" title="Jaune"></div>
+                            <div class="color-option" style="background: #e74c3c;" onclick="changePaddle1Color('#e74c3c')" title="Rouge"></div>
+                            <div class="color-option" style="background: #3498db;" onclick="changePaddle1Color('#3498db')" title="Bleu"></div>
+                            <div class="color-option" style="background: #9b59b6;" onclick="changePaddle1Color('#9b59b6')" title="Violet"></div>
+                            <div class="color-option" style="background: #ffffff;" onclick="changePaddle1Color('#ffffff')" title="Blanc"></div>
+                            <div class="color-option" style="background: #ff9500;" onclick="changePaddle1Color('#ff9500')" title="Orange"></div>
+                            <div class="color-option" style="background: #00d4ff;" onclick="changePaddle1Color('#00d4ff')" title="Cyan"></div>
+                            <div class="color-option" style="background: #ff1744;" onclick="changePaddle1Color('#ff1744')" title="Rouge vif"></div>
+                            <div class="color-option" style="background: #76ff03;" onclick="changePaddle1Color('#76ff03')" title="Vert lime"></div>
+                            <div class="color-option" style="background: #e91e63;" onclick="changePaddle1Color('#e91e63')" title="Rose fuchsia"></div>
+                            <div class="color-option" style="background: #ffc107;" onclick="changePaddle1Color('#ffc107')" title="Ambre"></div>
+                            <div class="color-option" style="background: #00bcd4;" onclick="changePaddle1Color('#00bcd4')" title="Turquoise"></div>
+                            <div class="color-option" style="background: #8e24aa;" onclick="changePaddle1Color('#8e24aa')" title="Violet foncé"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Couleurs raquette Joueur 2 -->
+                    <div id="paddle2Customization" class="customization-section">
+                        <div class="color-options">
+                            <div class="color-option active" style="background: #ff4757;" onclick="changePaddle2Color('#ff4757')" title="Rouge-orange"></div>
+                            <div class="color-option" style="background: #ffa500;" onclick="changePaddle2Color('#ffa500')" title="Orange"></div>
+                            <div class="color-option" style="background: #f1c40f;" onclick="changePaddle2Color('#f1c40f')" title="Jaune"></div>
+                            <div class="color-option" style="background: #3498db;" onclick="changePaddle2Color('#3498db')" title="Bleu"></div>
+                            <div class="color-option" style="background: #9b59b6;" onclick="changePaddle2Color('#9b59b6')" title="Violet"></div>
+                            <div class="color-option" style="background: #ffffff;" onclick="changePaddle2Color('#ffffff')" title="Blanc"></div>
+                            <div class="color-option" style="background: #2ecc71;" onclick="changePaddle2Color('#2ecc71')" title="Vert"></div>
+                            <div class="color-option" style="background: #00d4ff;" onclick="changePaddle2Color('#00d4ff')" title="Cyan"></div>
+                            <div class="color-option" style="background: #ff1744;" onclick="changePaddle2Color('#ff1744')" title="Rouge vif"></div>
+                            <div class="color-option" style="background: #76ff03;" onclick="changePaddle2Color('#76ff03')" title="Vert lime"></div>
+                            <div class="color-option" style="background: #e91e63;" onclick="changePaddle2Color('#e91e63')" title="Rose fuchsia"></div>
+                            <div class="color-option" style="background: #ffc107;" onclick="changePaddle2Color('#ffc107')" title="Ambre"></div>
+                            <div class="color-option" style="background: #00bcd4;" onclick="changePaddle2Color('#00bcd4')" title="Turquoise"></div>
+                            <div class="color-option" style="background: #8e24aa;" onclick="changePaddle2Color('#8e24aa')" title="Violet foncé"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Couleurs fond du terrain -->
+                    <div id="canvasCustomization" class="customization-section">
+                        <div class="color-options">
+                            <div class="color-option active" style="background: #0f0f23;" onclick="changeCanvasColor('#0f0f23')" title="Bleu foncé"></div>
+                            <div class="color-option" style="background: #1a1a2e;" onclick="changeCanvasColor('#1a1a2e')" title="Gris foncé"></div>
+                            <div class="color-option" style="background: #2c3e50;" onclick="changeCanvasColor('#2c3e50')" title="Bleu-gris"></div>
+                            <div class="color-option" style="background: #27ae60;" onclick="changeCanvasColor('#27ae60')" title="Vert"></div>
+                            <div class="color-option" style="background: #8e44ad;" onclick="changeCanvasColor('#8e44ad')" title="Violet"></div>
+                            <div class="color-option" style="background: #d35400;" onclick="changeCanvasColor('#d35400')" title="Orange"></div>
+                            <div class="color-option" style="background: #c0392b;" onclick="changeCanvasColor('#c0392b')" title="Rouge foncé"></div>
+                            <div class="color-option" style="background: #16537e;" onclick="changeCanvasColor('#16537e')" title="Bleu marine"></div>
+                            <div class="color-option" style="background: #7b1fa2;" onclick="changeCanvasColor('#7b1fa2')" title="Violet foncé"></div>
+                            <div class="color-option" style="background: #388e3c;" onclick="changeCanvasColor('#388e3c')" title="Vert foncé"></div>
+                            <div class="color-option" style="background: #5d4037;" onclick="changeCanvasColor('#5d4037')" title="Marron"></div>
+                            <div class="color-option" style="background: #455a64;" onclick="changeCanvasColor('#455a64')" title="Gris bleu"></div>
+                            <div class="color-option" style="background: #000000;" onclick="changeCanvasColor('#000000')" title="Noir"></div>
+                            <div class="color-option" style="background: #263238;" onclick="changeCanvasColor('#263238')" title="Gris anthracite"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Taille de la balle -->
+                    <div id="ballSizeCustomization" class="customization-section">
+                        <div class="slider-container">
+                            <label class="slider-label">Taille: <span id="ballSizeValue">8px</span></label>
+                            <input type="range" id="ballSizeSlider" class="custom-slider" min="4" max="20" value="8" oninput="changeBallSize(this.value)">
+                            <div class="slider-marks">
+                                <span>Petite</span>
+                                <span>Normale</span>
+                                <span>Grande</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Taille des raquettes -->
+                    <div id="paddleSizeCustomization" class="customization-section">
+                        <div class="slider-container">
+                            <label class="slider-label">Hauteur: <span id="paddleSizeValue">100px</span></label>
+                            <input type="range" id="paddleSizeSlider" class="custom-slider" min="60" max="160" value="100" oninput="changePaddleSize(this.value)">
+                            <div class="slider-marks">
+                                <span>Petite</span>
+                                <span>Normale</span>
+                                <span>Grande</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Vitesse de la balle -->
+                    <div id="ballSpeedCustomization" class="customization-section">
+                        <div class="slider-container">
+                            <label class="slider-label">Vitesse: <span id="ballSpeedValue">Normal</span></label>
+                            <input type="range" id="ballSpeedSlider" class="custom-slider" min="1" max="8" value="3" oninput="changeBallSpeed(this.value)">
+                            <div class="slider-marks">
+                                <span>Lente</span>
+                                <span>Normale</span>
+                                <span>Rapide</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Traînée de la balle -->
+                    <div id="ballTrailCustomization" class="customization-section">
+                        <div class="toggle-container">
+                            <label class="toggle-label">
+                                <input type="checkbox" id="ballTrailToggle" onchange="toggleBallTrail(this.checked)">
+                                <span class="toggle-slider"></span>
+                                Activer la traînée
+                            </label>
+                        </div>
+                        <div class="slider-container" id="trailLengthContainer" style="display: none;">
+                            <label class="slider-label">Longueur: <span id="trailLengthValue">5</span></label>
+                            <input type="range" id="trailLengthSlider" class="custom-slider" min="3" max="15" value="5" oninput="changeTrailLength(this.value)">
+                        </div>
+                    </div>
+                    
+                    <!-- Effets visuels -->
+                    <div id="gameEffectsCustomization" class="customization-section">
+                        <div class="effects-grid">
+                            <div class="effect-option">
+                                <label class="toggle-label">
+                                    <input type="checkbox" id="particlesToggle" checked onchange="toggleParticles(this.checked)">
+                                    <span class="toggle-slider"></span>
+                                    Particules de collision
+                                </label>
+                            </div>
+                            <div class="effect-option">
+                                <label class="toggle-label">
+                                    <input type="checkbox" id="screenShakeToggle" onchange="toggleScreenShake(this.checked)">
+                                    <span class="toggle-slider"></span>
+                                    Secousse d'écran
+                                </label>
+                            </div>
+                            <div class="effect-option">
+                                <label class="toggle-label">
+                                    <input type="checkbox" id="glowToggle" onchange="toggleGlow(this.checked)">
+                                    <span class="toggle-slider"></span>
+                                    Effet de lueur
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Style ligne centrale -->
+                    <div id="centerLineCustomization" class="customization-section">
+                        <div class="line-styles">
+                            <div class="line-option active" onclick="changeCenterLineStyle('dashed')" data-style="dashed">
+                                <div class="line-preview dashed"></div>
+                                <span>Pointillés</span>
+                            </div>
+                            <div class="line-option" onclick="changeCenterLineStyle('solid')" data-style="solid">
+                                <div class="line-preview solid"></div>
+                                <span>Solide</span>
+                            </div>
+                            <div class="line-option" onclick="changeCenterLineStyle('dots')" data-style="dots">
+                                <div class="line-preview dots"></div>
+                                <span>Points</span>
+                            </div>
+                            <div class="line-option" onclick="changeCenterLineStyle('none')" data-style="none">
+                                <div class="line-preview none"></div>
+                                <span>Aucune</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <button class="customize-close" onclick="hideCustomize()">×</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Variables du jeu
+        const game = {
+            player1: { x: 10, y: 150, width: 10, height: 100, speed: 8, score: 0, matches: 0 },
+            player2: { x: 780, y: 150, width: 10, height: 100, speed: 8, score: 0, matches: 0 },
+            ball: { x: 400, y: 200, radius: 8, speedX: 3, speedY: 2 },
+            keys: {},
+            gameWon: false,
+            winner: null,
+            confetti: [],
+            pointStartTime: Date.now(),
+            accelerationFactor: 1,
+            gameMode: 'pvp', // 'pvp' ou 'bot'
+            botLevel: 5, // Niveau de 1 à 12
+            botTarget: 200,
+            botReactionTime: 0,
+            pointsToWin: 7,
+            matchesToWin: 1,
+            paused: false
+        };
+        
+        // Variables pour les paramètres
+        const settings = {
+            volume: 50,
+            background: 'gradient1',
+            paddleSensitivity: 50
+        };
+        
+        // Système de sons
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function createBeep(frequency, duration, type = 'sine') {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = type;
+            
+            const volume = settings.volume / 100;
+            gainNode.gain.setValueAtTime(volume * 0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+        
+        function playPaddleHit() {
+            // Son de raquette - bruit sec et rapide
+            createBeep(800, 0.1, 'square');
+            setTimeout(() => createBeep(400, 0.05, 'triangle'), 20);
+        }
+        
+        function playWallBounce() {
+            // Son de rebond sur mur - plus doux
+            createBeep(300, 0.15, 'sine');
+        }
+        
+        function playPoint() {
+            // Son de point - séquence montante
+            createBeep(440, 0.2, 'sine');
+            setTimeout(() => createBeep(554, 0.2, 'sine'), 100);
+            setTimeout(() => createBeep(659, 0.3, 'sine'), 200);
+        }
+        
+        function playVictory() {
+            // Mélodie de victoire
+            const notes = [523, 659, 784, 1047]; // Do, Mi, Sol, Do aigu
+            notes.forEach((note, index) => {
+                setTimeout(() => {
+                    createBeep(note, 0.4, 'sine');
+                }, index * 200);
+            });
+        }
+        
+        function playCountdown() {
+            // Son de décompte
+            createBeep(800, 0.2, 'square');
+        }
+        
+        function playGameStart() {
+            // Son de début de partie
+            createBeep(1000, 0.3, 'sine');
+            setTimeout(() => createBeep(1200, 0.4, 'sine'), 150);
+        }
+        
+        function playButtonClick() {
+            // Son de clic de bouton
+            createBeep(600, 0.1, 'square');
+        }
+        
+        function playMenuOpen() {
+            // Son d'ouverture de menu
+            createBeep(400, 0.1, 'sine');
+            setTimeout(() => createBeep(600, 0.1, 'sine'), 50);
+        }
+        
+        function playMenuClose() {
+            // Son de fermeture de menu
+            createBeep(600, 0.1, 'sine');
+            setTimeout(() => createBeep(400, 0.1, 'sine'), 50);
+        }
+        
+        // Variables pour la personnalisation du jeu
+        const gameCustomization = {
+            ballColor: '#ffffff',
+            paddle1Color: '#00ff88',
+            paddle2Color: '#ff4757',
+            canvasColor: '#0f0f23',
+            ballSize: 8,
+            paddleHeight: 100,
+            ballSpeed: 3,
+            ballTrail: false,
+            trailLength: 5,
+            particles: true,
+            screenShake: false,
+            glow: false,
+            centerLineStyle: 'dashed'
+        };
+        
+        // Historique de la traînée de la balle
+        let ballTrail = [];
+        
+        let gameStarted = false;
+        let countdownActive = false;
+        
+        // Fonction pour fermer les menus en cliquant à l'extérieur
+        function closeOnOutsideClick(event, menuId) {
+            if (event.target === event.currentTarget) {
+                if (menuId === 'settingsMenu') {
+                    hideSettings();
+                } else if (menuId === 'customizeMenu') {
+                    hideCustomize();
+                }
+            }
+        }
+        
+        // Fonctions du menu
+        function showSettings() {
+            playMenuOpen();
+            if (countdownActive) {
+                pauseCountdown();
+            } else if (gameStarted) {
+                game.paused = true;
+            }
+            document.getElementById('settingsMenu').style.display = 'block';
+            updateVolumeDisplay();
+            updateSensitivityDisplay();
+        }
+        
+        function hideSettings() {
+            playMenuClose();
+            if (countdownActive) {
+                resumeCountdown();
+            } else if (gameStarted) {
+                game.paused = false;
+            }
+            document.getElementById('settingsMenu').style.display = 'none';
+        }
+        
+        function updateVolume(value) {
+            settings.volume = value;
+            document.getElementById('volumeValue').textContent = value + '%';
+        }
+        
+        function updateVolumeDisplay() {
+            document.getElementById('volumeSlider').value = settings.volume;
+            document.getElementById('volumeValue').textContent = settings.volume + '%';
+        }
+        
+        function updateSensitivity(value) {
+            settings.paddleSensitivity = value;
+            document.getElementById('sensitivityValue').textContent = value + '%';
+        }
+        
+        function updateSensitivityDisplay() {
+            document.getElementById('sensitivitySlider').value = settings.paddleSensitivity;
+            document.getElementById('sensitivityValue').textContent = settings.paddleSensitivity + '%';
+        }
+        
+        function changeBackground(bgType) {
+            playButtonClick();
+            settings.background = bgType;
+            const backgrounds = {
+                'gradient1': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                'gradient2': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                'gradient3': 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                'gradient4': 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                'gradient5': 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+                'gradient6': 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+                'gradient7': 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+                'gradient8': 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+                'gradient9': 'linear-gradient(135deg, #ff8a80 0%, #ea80fc 100%)',
+                'gradient10': 'linear-gradient(135deg, #8fd3f4 0%, #84fab0 100%)',
+                'dark': '#1a1a2e',
+                'space': 'radial-gradient(ellipse at center, #0c0c0c 0%, #1a1a2e 50%, #000 100%)'
+            };
+            
+            document.body.style.background = backgrounds[bgType];
+            
+            // Mettre à jour les boutons actifs
+            document.querySelectorAll('.bg-option').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[onclick="changeBackground('${bgType}')"]`).classList.add('active');
+        }
+        
+        // Fonctions de personnalisation du jeu
+        function showCustomize() {
+            playMenuOpen();
+            if (countdownActive) {
+                pauseCountdown();
+            } else if (gameStarted) {
+                game.paused = true;
+            }
+            document.getElementById('customizeMenu').style.display = 'block';
+        }
+        
+        function hideCustomize() {
+            playMenuClose();
+            if (countdownActive) {
+                resumeCountdown();
+            } else if (gameStarted) {
+                game.paused = false;
+            }
+            document.getElementById('customizeMenu').style.display = 'none';
+        }
+        
+        function changeBallColor(color) {
+            playButtonClick();
+            gameCustomization.ballColor = color;
+            updateColorButtons('ball', color);
+        }
+        
+        function changePaddle1Color(color) {
+            playButtonClick();
+            gameCustomization.paddle1Color = color;
+            updateColorButtons('paddle1', color);
+        }
+        
+        function changePaddle2Color(color) {
+            playButtonClick();
+            gameCustomization.paddle2Color = color;
+            updateColorButtons('paddle2', color);
+        }
+        
+        function changeCanvasColor(color) {
+            playButtonClick();
+            gameCustomization.canvasColor = color;
+            canvas.style.background = color;
+            updateColorButtons('canvas', color);
+        }
+        
+        function updateColorButtons(type, selectedColor) {
+            const typeMap = {
+                'ball': 'changeBallColor',
+                'paddle1': 'changePaddle1Color', 
+                'paddle2': 'changePaddle2Color',
+                'canvas': 'changeCanvasColor'
+            };
+            
+            document.querySelectorAll(`[onclick^="${typeMap[type]}"]`).forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.onclick.toString().includes(selectedColor)) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+        
+        // Fonctions pour le menu déroulant
+        function toggleDropdown(dropdownId) {
+            playButtonClick();
+            const dropdown = document.getElementById(dropdownId);
+            const header = dropdown.previousElementSibling;
+            
+            dropdown.classList.toggle('open');
+            header.classList.toggle('active');
+        }
+        
+        function selectCustomization(type, label) {
+            playButtonClick();
+            
+            // Mettre à jour le texte sélectionné
+            document.getElementById('selectedCustomization').textContent = label;
+            
+            // Fermer le menu déroulant
+            const dropdown = document.getElementById('customizeDropdown');
+            const header = dropdown.previousElementSibling;
+            dropdown.classList.remove('open');
+            header.classList.remove('active');
+            
+            // Masquer toutes les sections
+            document.querySelectorAll('.customization-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Afficher la section sélectionnée
+            const sectionId = type + 'Customization';
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.classList.add('active');
+            }
+        }
+        
+        // Nouvelles fonctions de personnalisation
+        function changeBallSize(size) {
+            gameCustomization.ballSize = parseInt(size);
+            game.ball.radius = gameCustomization.ballSize;
+            document.getElementById('ballSizeValue').textContent = size + 'px';
+        }
+        
+        function changePaddleSize(height) {
+            gameCustomization.paddleHeight = parseInt(height);
+            game.player1.height = gameCustomization.paddleHeight;
+            game.player2.height = gameCustomization.paddleHeight;
+            document.getElementById('paddleSizeValue').textContent = height + 'px';
+        }
+        
+        function changeBallSpeed(speed) {
+            gameCustomization.ballSpeed = parseInt(speed);
+            const speedLabels = ['', 'Très lente', 'Lente', 'Normale', 'Rapide', 'Très rapide', 'Ultra rapide', 'Extrême', 'Folle'];
+            document.getElementById('ballSpeedValue').textContent = speedLabels[speed] || 'Normale';
+        }
+        
+        function toggleBallTrail(enabled) {
+            gameCustomization.ballTrail = enabled;
+            const container = document.getElementById('trailLengthContainer');
+            container.style.display = enabled ? 'block' : 'none';
+            
+            if (!enabled) {
+                ballTrail = [];
+            }
+        }
+        
+        function changeTrailLength(length) {
+            gameCustomization.trailLength = parseInt(length);
+            document.getElementById('trailLengthValue').textContent = length;
+        }
+        
+        function toggleParticles(enabled) {
+            gameCustomization.particles = enabled;
+        }
+        
+        function toggleScreenShake(enabled) {
+            gameCustomization.screenShake = enabled;
+        }
+        
+        function toggleGlow(enabled) {
+            gameCustomization.glow = enabled;
+        }
+        
+        function changeCenterLineStyle(style) {
+            playButtonClick();
+            gameCustomization.centerLineStyle = style;
+            
+            // Mettre à jour les boutons actifs
+            document.querySelectorAll('.line-option').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-style="${style}"]`).classList.add('active');
+        }
+        
+        // Fonction de décompte
+        let countdownInterval;
+        let countdownCount = 3;
+        
+        function startCountdown() {
+            countdownActive = true;
+            countdownCount = 3;
+            const countdownEl = document.getElementById('countdown');
+            countdownEl.style.display = 'block';
+            countdownEl.textContent = countdownCount;
+            
+            countdownInterval = setInterval(() => {
+                if (game.paused) return; // Ne pas continuer si en pause
+                
+                countdownCount--;
+                if (countdownCount > 0) {
+                    countdownEl.textContent = countdownCount;
+                    playCountdown();
+                } else if (countdownCount === 0) {
+                    countdownEl.textContent = 'GO!';
+                    playGameStart();
+                } else {
+                    countdownEl.style.display = 'none';
+                    countdownActive = false;
+                    gameStarted = true;
+                    clearInterval(countdownInterval);
+                }
+            }, 1000);
+        }
+        
+        function pauseCountdown() {
+            game.paused = true;
+        }
+        
+        function resumeCountdown() {
+            if (countdownActive) {
+                game.paused = false;
+            }
+        }
+        
+        function showMainMenu() {
+            playButtonClick();
+            document.getElementById('mainMenu').style.display = 'block';
+            document.getElementById('botMenu').style.display = 'none';
+            document.getElementById('botConfigMenu').style.display = 'none';
+            document.getElementById('pvpConfigMenu').style.display = 'none';
+            document.getElementById('gameArea').style.display = 'none';
+            document.querySelector('.customize-button').style.display = 'none';
+            document.getElementById('countdown').style.display = 'none';
+            gameStarted = false;
+            countdownActive = false;
+            resetGame();
+        }
+        
+        function showBotMenu() {
+            playButtonClick();
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('botMenu').style.display = 'block';
+            document.getElementById('botConfigMenu').style.display = 'none';
+        }
+        
+        // Fonction pour mettre à jour le niveau du bot
+        function updateBotLevel(level) {
+            game.botLevel = parseInt(level);
+            
+            const levelInfo = {
+                1: { name: "Extrêmement Facile", desc: "Le bot bouge à peine et rate souvent la balle. Parfait pour débuter!", emoji: "😴" },
+                2: { name: "Très Facile", desc: "Le bot est très lent et fait beaucoup d'erreurs.", emoji: "😊" },
+                3: { name: "Facile", desc: "Le bot joue doucement avec des erreurs fréquentes.", emoji: "🙂" },
+                4: { name: "Assez Facile", desc: "Le bot commence à être un peu plus réactif.", emoji: "😐" },
+                5: { name: "Normal", desc: "Le bot joue de manière équilibrée avec quelques erreurs occasionnelles.", emoji: "🤔" },
+                6: { name: "Assez Difficile", desc: "Le bot devient plus précis et réactif.", emoji: "😤" },
+                7: { name: "Moyen", desc: "Le bot joue bien avec une bonne précision.", emoji: "😠" },
+                8: { name: "Difficile", desc: "Le bot est rapide et fait peu d'erreurs.", emoji: "😡" },
+                9: { name: "Très Difficile", desc: "Le bot anticipe vos mouvements et joue agressivement.", emoji: "🤬" },
+                10: { name: "Expert", desc: "Le bot est extrêmement précis et rapide. Un vrai défi!", emoji: "🔥" },
+                11: { name: "Maître", desc: "Le bot joue presque parfaitement. Très peu d'erreurs.", emoji: "👹" },
+                12: { name: "Impossible", desc: "Le bot est inhumain. Bonne chance pour marquer un point!", emoji: "💀" }
+            };
+            
+            const info = levelInfo[level];
+            document.getElementById('botLevelDisplay').textContent = `${info.emoji} Niveau ${level} - ${info.name}`;
+            document.getElementById('botLevelDescription').textContent = info.desc;
+        }
+        
+        function showBotConfig() {
+            playButtonClick();
+            document.getElementById('botConfigTitle').textContent = `Configuration - Bot Niveau ${game.botLevel}`;
+            document.getElementById('botMenu').style.display = 'none';
+            document.getElementById('botConfigMenu').style.display = 'block';
+        }
+        
+        function selectPoints(points) {
+            playButtonClick();
+            game.pointsToWin = points;
+            
+            // Mettre à jour les boutons actifs
+            document.querySelectorAll('[id^="points"]').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`points${points}`).classList.add('active');
+        }
+        
+        function selectMatches(matches) {
+            playButtonClick();
+            game.matchesToWin = matches;
+            
+            // Mettre à jour les boutons actifs
+            document.querySelectorAll('[id^="matches"]').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`matches${matches}`).classList.add('active');
+        }
+        
+        function selectPointsPvP(points) {
+            playButtonClick();
+            game.pointsToWin = points;
+            
+            // Mettre à jour les boutons actifs
+            document.querySelectorAll('[id^="pvpPoints"]').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`pvpPoints${points}`).classList.add('active');
+        }
+        
+        function selectMatchesPvP(matches) {
+            playButtonClick();
+            game.matchesToWin = matches;
+            
+            // Mettre à jour les boutons actifs
+            document.querySelectorAll('[id^="pvpMatches"]').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`pvpMatches${matches}`).classList.add('active');
+        }
+        
+        function startBotWithConfig() {
+            playButtonClick();
+            
+            let controlsText = `Joueur vs Bot (Niveau ${game.botLevel}) | S/W pour bouger | `;
+            
+            if (game.matchesToWin === 1) {
+                controlsText += `Premier à ${game.pointsToWin} points gagne! | Échap: Menu`;
+            } else {
+                controlsText += `${game.pointsToWin} points par partie, ${game.matchesToWin} parties pour gagner | Échap: Menu`;
+            }
+            
+            document.getElementById('gameControls').textContent = controlsText;
+            startGame();
+        }
+        
+        function startPvP() {
+            playButtonClick();
+            showPvPConfig();
+        }
+        
+        function showPvPConfig() {
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('pvpConfigMenu').style.display = 'block';
+        }
+        
+        function startPvPWithConfig() {
+            playButtonClick();
+            game.gameMode = 'pvp';
+            
+            let controlsText = `Joueur 1: S/W | Joueur 2: ↑/↓ | `;
+            
+            if (game.matchesToWin === 1) {
+                controlsText += `Premier à ${game.pointsToWin} points gagne! | Échap: Menu`;
+            } else {
+                controlsText += `${game.pointsToWin} points par partie, ${game.matchesToWin} parties pour gagner | Échap: Menu`;
+            }
+            
+            document.getElementById('gameControls').textContent = controlsText;
+            startGame();
+        }
+        
+
+        
+        function startGame() {
+            game.gameMode = 'bot';
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('botMenu').style.display = 'none';
+            document.getElementById('botConfigMenu').style.display = 'none';
+            document.getElementById('gameArea').style.display = 'block';
+            document.querySelector('.customize-button').style.display = 'block';
+            gameStarted = false;
+            resetGame();
+            startCountdown();
+            gameLoop();
+        }
+        
+        function resetGame() {
+            game.player1.score = 0;
+            game.player2.score = 0;
+            game.player1.matches = 0;
+            game.player2.matches = 0;
+            game.gameWon = false;
+            game.winner = null;
+            game.confetti = [];
+            game.pointStartTime = Date.now();
+            game.accelerationFactor = 1;
+            game.botTarget = 200;
+            game.botReactionTime = 0;
+            document.getElementById('player1Score').textContent = '0';
+            document.getElementById('player2Score').textContent = '0';
+            document.getElementById('player1Matches').textContent = '0';
+            document.getElementById('player2Matches').textContent = '0';
+            
+            // Appliquer la couleur de fond personnalisée
+            canvas.style.background = gameCustomization.canvasColor;
+            
+            resetBall();
+        }
+        
+        // Gestion des touches
+        document.addEventListener('keydown', (e) => {
+            game.keys[e.key.toLowerCase()] = true;
+            
+            // Échap pour retourner au menu
+            if (e.key === 'Escape') {
+                showMainMenu();
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            game.keys[e.key.toLowerCase()] = false;
+        });
+        
+        // IA du bot avec 12 niveaux parfaitement équilibrés
+        function updateBot() {
+            if (game.gameMode !== 'bot') return;
+            
+            // Configuration des 12 niveaux de bot avec progression équilibrée
+            const getBotSettings = (level) => {
+                const baseSettings = {
+                    // Niveau 1 - Extrêmement Facile: Presque immobile, rate énormément
+                    1: { speed: 0.8, reactionDelay: 1500, errorChance: 0.85, maxDistance: 120, laziness: 0.8, prediction: 0, missChance: 0.4 },
+                    
+                    // Niveau 2 - Très Facile: Très lent, beaucoup d'erreurs
+                    2: { speed: 1.2, reactionDelay: 1200, errorChance: 0.75, maxDistance: 100, laziness: 0.7, prediction: 0, missChance: 0.3 },
+                    
+                    // Niveau 3 - Facile: Lent avec erreurs fréquentes
+                    3: { speed: 1.8, reactionDelay: 900, errorChance: 0.65, maxDistance: 80, laziness: 0.6, prediction: 0.1, missChance: 0.2 },
+                    
+                    // Niveau 4 - Assez Facile: Un peu plus réactif
+                    4: { speed: 2.2, reactionDelay: 700, errorChance: 0.55, maxDistance: 65, laziness: 0.5, prediction: 0.2, missChance: 0.15 },
+                    
+                    // Niveau 5 - Normal: Équilibré avec erreurs occasionnelles
+                    5: { speed: 2.8, reactionDelay: 550, errorChance: 0.45, maxDistance: 50, laziness: 0.4, prediction: 0.3, missChance: 0.1 },
+                    
+                    // Niveau 6 - Assez Difficile: Plus précis et réactif
+                    6: { speed: 3.2, reactionDelay: 450, errorChance: 0.35, maxDistance: 40, laziness: 0.3, prediction: 0.4, missChance: 0.08 },
+                    
+                    // Niveau 7 - Moyen: Joue bien avec bonne précision
+                    7: { speed: 3.8, reactionDelay: 350, errorChance: 0.28, maxDistance: 32, laziness: 0.2, prediction: 0.5, missChance: 0.05 },
+                    
+                    // Niveau 8 - Difficile: Rapide avec peu d'erreurs
+                    8: { speed: 4.2, reactionDelay: 280, errorChance: 0.22, maxDistance: 25, laziness: 0.15, prediction: 0.6, missChance: 0.03 },
+                    
+                    // Niveau 9 - Très Difficile: Anticipe et joue agressivement
+                    9: { speed: 4.8, reactionDelay: 220, errorChance: 0.16, maxDistance: 20, laziness: 0.1, prediction: 0.75, missChance: 0.02 },
+                    
+                    // Niveau 10 - Expert: Extrêmement précis et rapide
+                    10: { speed: 5.5, reactionDelay: 170, errorChance: 0.12, maxDistance: 15, laziness: 0.05, prediction: 0.85, missChance: 0.01 },
+                    
+                    // Niveau 11 - Maître: Joue presque parfaitement
+                    11: { speed: 6.2, reactionDelay: 120, errorChance: 0.08, maxDistance: 10, laziness: 0.02, prediction: 0.95, missChance: 0.005 },
+                    
+                    // Niveau 12 - Impossible: Inhumain, réflexes parfaits
+                    12: { speed: 7.5, reactionDelay: 80, errorChance: 0.04, maxDistance: 5, laziness: 0, prediction: 1.0, missChance: 0 }
+                };
+                return baseSettings[level] || baseSettings[5];
+            };
+            
+            const settings = getBotSettings(game.botLevel);
+            
+            // Chance de complètement rater la balle (niveaux faibles)
+            if (Math.random() < settings.missChance) {
+                return; // Le bot ne bouge pas du tout
+            }
+            
+            // Le bot ne réagit que si la balle va vers lui (sauf niveaux élevés)
+            if (game.ball.speedX <= 0 && game.botLevel < 7) {
+                // Si la balle s'éloigne, le bot peut être paresseux selon son niveau
+                if (Math.random() < settings.laziness) {
+                    return; // Le bot ne bouge pas
+                }
+            }
+            
+            // Délai de réaction du bot (plus le niveau est bas, plus il est lent à réagir)
+            if (Date.now() - game.botReactionTime > settings.reactionDelay) {
+                let targetY = game.ball.y;
+                
+                // Prédiction selon le niveau (plus le niveau est élevé, meilleure est la prédiction)
+                if (settings.prediction > 0 && game.ball.speedX > 0) {
+                    const timeToReach = (game.player2.x - game.ball.x) / Math.abs(game.ball.speedX * game.accelerationFactor);
+                    let predictedY = game.ball.y + (game.ball.speedY * game.accelerationFactor * timeToReach * settings.prediction);
+                    
+                    // Gérer les rebonds sur les murs pour les niveaux élevés
+                    if (game.botLevel >= 8) {
+                        let bounces = 0;
+                        while ((predictedY < 0 || predictedY > canvas.height) && bounces < 3) {
+                            if (predictedY < 0) predictedY = -predictedY;
+                            if (predictedY > canvas.height) predictedY = 2 * canvas.height - predictedY;
+                            bounces++;
+                        }
+                    }
+                    
+                    targetY = predictedY;
+                }
+                
+                // Ajouter des erreurs selon le niveau (plus le niveau est bas, plus il y a d'erreurs)
+                if (Math.random() < settings.errorChance) {
+                    const errorRange = 200 - (game.botLevel * 15); // Erreur diminue avec le niveau
+                    targetY += (Math.random() - 0.5) * errorRange;
+                }
+                
+                // Pour les niveaux très bas, ajouter des erreurs supplémentaires
+                if (game.botLevel <= 3) {
+                    if (Math.random() < 0.3) {
+                        // Parfois vise complètement à côté
+                        targetY += (Math.random() - 0.5) * 300;
+                    }
+                }
+                
+                // Centrer la cible sur la raquette
+                game.botTarget = targetY - game.player2.height / 2;
+                game.botReactionTime = Date.now();
+            }
+            
+            // Mouvement du bot vers la cible
+            const botCenter = game.player2.y + game.player2.height / 2;
+            const diff = game.botTarget + game.player2.height / 2 - botCenter;
+            
+            // Distance minimale avant de bouger (plus le niveau est bas, plus cette distance est grande)
+            if (Math.abs(diff) > settings.maxDistance) {
+                let moveSpeed = settings.speed;
+                
+                // Mouvement très irrégulier pour les niveaux faibles
+                if (game.botLevel <= 2) {
+                    if (Math.random() < 0.4) {
+                        moveSpeed *= 0.2; // Très souvent très lent
+                    } else if (Math.random() < 0.3) {
+                        return; // Souvent ne bouge pas du tout
+                    } else if (Math.random() < 0.1) {
+                        moveSpeed *= -0.5; // Parfois va dans la mauvaise direction
+                    }
+                } else if (game.botLevel <= 4) {
+                    if (Math.random() < 0.25) {
+                        moveSpeed *= 0.4; // Parfois lent
+                    } else if (Math.random() < 0.2) {
+                        return; // Parfois ne bouge pas
+                    }
+                } else if (game.botLevel <= 6) {
+                    if (Math.random() < 0.15) {
+                        moveSpeed *= 0.6; // Occasionnellement plus lent
+                    }
+                }
+                
+                // Mouvement fluide qui s'améliore avec le niveau
+                const smoothness = Math.min(1.0, 0.2 + (game.botLevel * 0.07));
+                let movement = Math.sign(diff) * Math.min(moveSpeed, Math.abs(diff) * smoothness);
+                
+                // Pour les niveaux très élevés, mouvement plus précis
+                if (game.botLevel >= 10) {
+                    movement = Math.sign(diff) * Math.min(moveSpeed, Math.abs(diff));
+                }
+                
+                game.player2.y += movement;
+                
+                // S'assurer que le bot reste dans les limites
+                if (game.player2.y < 0) game.player2.y = 0;
+                if (game.player2.y > canvas.height - game.player2.height) {
+                    game.player2.y = canvas.height - game.player2.height;
+                }
+            }
+        }
+        
+        // Fonction pour dessiner un rectangle avec coins arrondis
+        function drawRoundedRect(x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        // Fonction de dessin
+        function draw() {
+            // Effacer le canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Dessiner la traînée de la balle si activée
+            if (gameCustomization.ballTrail && ballTrail.length > 0) {
+                for (let i = 0; i < ballTrail.length; i++) {
+                    const trail = ballTrail[i];
+                    const alpha = (i + 1) / ballTrail.length * 0.5;
+                    
+                    ctx.fillStyle = gameCustomization.ballColor + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+                    ctx.beginPath();
+                    ctx.arc(trail.x, trail.y, game.ball.radius * (alpha + 0.3), 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
+            // Ligne centrale avec style personnalisé
+            if (gameCustomization.centerLineStyle !== 'none') {
+                ctx.strokeStyle = '#444';
+                ctx.lineWidth = 2;
+                
+                if (gameCustomization.centerLineStyle === 'dashed') {
+                    ctx.setLineDash([10, 10]);
+                } else if (gameCustomization.centerLineStyle === 'dots') {
+                    ctx.setLineDash([2, 8]);
+                } else {
+                    ctx.setLineDash([]);
+                }
+                
+                ctx.beginPath();
+                ctx.moveTo(canvas.width / 2, 0);
+                ctx.lineTo(canvas.width / 2, canvas.height);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            
+            // Dessiner les barres avec couleurs personnalisées et effet de lueur
+            if (gameCustomization.glow) {
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = gameCustomization.paddle1Color;
+            }
+            
+            ctx.fillStyle = gameCustomization.paddle1Color;
+            drawRoundedRect(game.player1.x, game.player1.y, game.player1.width, game.player1.height, 5);
+            
+            // Couleur différente pour le bot ou joueur 2
+            if (game.gameMode === 'bot') {
+                if (gameCustomization.glow) {
+                    ctx.shadowColor = '#ffa500';
+                }
+                ctx.fillStyle = '#ffa500';
+            } else {
+                if (gameCustomization.glow) {
+                    ctx.shadowColor = gameCustomization.paddle2Color;
+                }
+                ctx.fillStyle = gameCustomization.paddle2Color;
+            }
+            drawRoundedRect(game.player2.x, game.player2.y, game.player2.width, game.player2.height, 5);
+            
+            // Réinitialiser l'ombre
+            if (gameCustomization.glow) {
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = gameCustomization.ballColor;
+            }
+            
+            // Dessiner la balle avec couleur personnalisée
+            ctx.fillStyle = gameCustomization.ballColor;
+            ctx.beginPath();
+            ctx.arc(game.ball.x, game.ball.y, game.ball.radius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Réinitialiser l'ombre
+            ctx.shadowBlur = 0;
+            
+            // Effet de brillance sur la balle
+            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            ctx.beginPath();
+            ctx.arc(game.ball.x - 2, game.ball.y - 2, game.ball.radius * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Dessiner les confettis
+            if (game.confetti.length > 0) {
+                drawConfetti();
+            }
+            
+            // Afficher le message de pause
+            if (game.paused && !game.gameWon) {
+                // Fond semi-transparent
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Texte de pause
+                ctx.fillStyle = '#9b59b6';
+                ctx.font = 'bold 48px Arial';
+                ctx.textAlign = 'center';
+                
+                if (countdownActive) {
+                    ctx.fillText('⏸️ DÉCOMPTE EN PAUSE', canvas.width / 2, canvas.height / 2 - 20);
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '24px Arial';
+                    ctx.fillText('Fermez les menus pour reprendre le décompte', canvas.width / 2, canvas.height / 2 + 40);
+                } else {
+                    ctx.fillText('⏸️ JEU EN PAUSE', canvas.width / 2, canvas.height / 2 - 20);
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '24px Arial';
+                    ctx.fillText('Personnalisez votre jeu dans le menu', canvas.width / 2, canvas.height / 2 + 40);
+                }
+            }
+            
+            // Afficher le message de victoire
+            if (game.gameWon) {
+                // Fond semi-transparent
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Texte de victoire
+                ctx.fillStyle = '#FFD700';
+                ctx.font = 'bold 48px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('🎉 ' + game.winner + ' GAGNE! 🎉', canvas.width / 2, canvas.height / 2 - 20);
+                
+                ctx.fillStyle = '#fff';
+                ctx.font = '24px Arial';
+                ctx.fillText('Appuyez sur R pour une nouvelle partie', canvas.width / 2, canvas.height / 2 + 40);
+            }
+        }
+        
+        // Fonction de redémarrage
+        function restartGame() {
+            game.player1.score = 0;
+            game.player2.score = 0;
+            game.gameWon = false;
+            game.winner = null;
+            game.confetti = [];
+            game.pointStartTime = Date.now();
+            game.accelerationFactor = 1;
+            document.getElementById('player1Score').textContent = '0';
+            document.getElementById('player2Score').textContent = '0';
+            resetBall();
+        }
+        
+        // Fonction de mise à jour
+        function update() {
+            // Redémarrer le jeu avec R
+            if (game.keys['r'] && game.gameWon) {
+                restartGame();
+                return;
+            }
+            
+            // Ne pas bouger si le jeu est gagné, en pause ou si le décompte est actif
+            if (game.gameWon || countdownActive || game.paused) return;
+            
+            // Calculer la vitesse basée sur la sensibilité
+            const paddleSpeed = (game.player1.speed * settings.paddleSensitivity) / 50;
+            
+            // Mouvement du joueur 1 (S/W - inversé)
+            if (game.keys['s'] && game.player1.y > 0) {
+                game.player1.y -= paddleSpeed;
+            }
+            if (game.keys['w'] && game.player1.y < canvas.height - game.player1.height) {
+                game.player1.y += paddleSpeed;
+            }
+            
+            // Mouvement du joueur 2 (seulement en mode PvP)
+            if (game.gameMode === 'pvp') {
+                if (game.keys['arrowup'] && game.player2.y > 0) {
+                    game.player2.y -= paddleSpeed;
+                }
+                if (game.keys['arrowdown'] && game.player2.y < canvas.height - game.player2.height) {
+                    game.player2.y += paddleSpeed;
+                }
+            } else {
+                // Mettre à jour le bot
+                updateBot();
+            }
+            
+            // Calculer l'accélération basée sur le temps écoulé depuis le début du point
+            const timeElapsed = (Date.now() - game.pointStartTime) / 1000; // en secondes
+            game.accelerationFactor = 1 + (timeElapsed * 0.1); // Accélération progressive plus douce
+            
+            // Ajouter la position actuelle à la traînée
+            if (gameCustomization.ballTrail) {
+                ballTrail.push({ x: game.ball.x, y: game.ball.y });
+                if (ballTrail.length > gameCustomization.trailLength) {
+                    ballTrail.shift();
+                }
+            }
+            
+            // Mouvement de la balle avec vitesse personnalisée et accélération
+            const currentSpeed = gameCustomization.ballSpeed;
+            game.ball.x += (game.ball.speedX > 0 ? currentSpeed : -currentSpeed) * game.accelerationFactor;
+            game.ball.y += (game.ball.speedY > 0 ? Math.abs(game.ball.speedY) : -Math.abs(game.ball.speedY)) * game.accelerationFactor;
+            
+            // Rebond sur les murs haut et bas
+            if (game.ball.y <= game.ball.radius) {
+                game.ball.speedY = Math.abs(game.ball.speedY);
+                game.ball.y = game.ball.radius;
+                playWallBounce();
+            }
+            if (game.ball.y >= canvas.height - game.ball.radius) {
+                game.ball.speedY = -Math.abs(game.ball.speedY);
+                game.ball.y = canvas.height - game.ball.radius;
+                playWallBounce();
+            }
+            
+            // Collision avec la raquette du joueur 1
+            if (game.ball.x - game.ball.radius <= game.player1.x + game.player1.width &&
+                game.ball.y >= game.player1.y &&
+                game.ball.y <= game.player1.y + game.player1.height &&
+                game.ball.speedX < 0) {
+                
+                game.ball.speedX = Math.abs(game.ball.speedX);
+                
+                // Calculer l'angle selon où la balle touche la raquette
+                const hitPos = (game.ball.y - (game.player1.y + game.player1.height / 2)) / (game.player1.height / 2);
+                game.ball.speedY = hitPos * 3;
+                
+                // Repositionner la balle
+                game.ball.x = game.player1.x + game.player1.width + game.ball.radius;
+                playPaddleHit();
+            }
+            
+            // Collision avec la raquette du joueur 2
+            if (game.ball.x + game.ball.radius >= game.player2.x &&
+                game.ball.y >= game.player2.y &&
+                game.ball.y <= game.player2.y + game.player2.height &&
+                game.ball.speedX > 0) {
+                
+                game.ball.speedX = -Math.abs(game.ball.speedX);
+                
+                // Calculer l'angle selon où la balle touche la raquette
+                const hitPos = (game.ball.y - (game.player2.y + game.player2.height / 2)) / (game.player2.height / 2);
+                game.ball.speedY = hitPos * 3;
+                
+                // Repositionner la balle
+                game.ball.x = game.player2.x - game.ball.radius;
+                playPaddleHit();
+            }
+            
+            // Vérifier les points
+            if (game.ball.x < 0) {
+                game.player2.score++;
+                document.getElementById('player2Score').textContent = game.player2.score;
+                playPoint();
+                if (game.player2.score >= game.pointsToWin) {
+                    game.player2.matches++;
+                    document.getElementById('player2Matches').textContent = game.player2.matches;
+                    
+                    // Vérifier si le match est terminé
+                    if (game.player2.matches >= game.matchesToWin) {
+                        game.gameWon = true;
+                        game.winner = game.gameMode === 'bot' ? 'Bot' : 'Joueur 2';
+                        createConfetti();
+                        playVictory();
+                    } else {
+                        // Nouvelle partie
+                        game.player1.score = 0;
+                        game.player2.score = 0;
+                        document.getElementById('player1Score').textContent = '0';
+                        document.getElementById('player2Score').textContent = '0';
+                        resetBall();
+                    }
+                } else {
+                    resetBall();
+                }
+            }
+            
+            if (game.ball.x > canvas.width) {
+                game.player1.score++;
+                document.getElementById('player1Score').textContent = game.player1.score;
+                playPoint();
+                if (game.player1.score >= game.pointsToWin) {
+                    game.player1.matches++;
+                    document.getElementById('player1Matches').textContent = game.player1.matches;
+                    
+                    // Vérifier si le match est terminé
+                    if (game.player1.matches >= game.matchesToWin) {
+                        game.gameWon = true;
+                        game.winner = 'Joueur 1';
+                        createConfetti();
+                        playVictory();
+                    } else {
+                        // Nouvelle partie
+                        game.player1.score = 0;
+                        game.player2.score = 0;
+                        document.getElementById('player1Score').textContent = '0';
+                        document.getElementById('player2Score').textContent = '0';
+                        resetBall();
+                    }
+                } else {
+                    resetBall();
+                }
+            }
+        }
+        
+        // Créer des confettis
+        function createConfetti() {
+            // Créer plusieurs vagues de confettis
+            for (let wave = 0; wave < 3; wave++) {
+                setTimeout(() => {
+                    for (let i = 0; i < 80; i++) {
+                        game.confetti.push({
+                            x: Math.random() * canvas.width,
+                            y: -Math.random() * 100 - 20,
+                            speedX: (Math.random() - 0.5) * 8,
+                            speedY: Math.random() * 4 + 3,
+                            color: `hsl(${Math.random() * 360}, 80%, ${50 + Math.random() * 30}%)`,
+                            size: Math.random() * 8 + 3,
+                            rotation: Math.random() * 360,
+                            rotationSpeed: (Math.random() - 0.5) * 15,
+                            gravity: 0.15 + Math.random() * 0.1,
+                            bounce: 0.6 + Math.random() * 0.3,
+                            life: 1.0,
+                            decay: 0.005 + Math.random() * 0.005
+                        });
+                    }
+                }, wave * 300);
+            }
+        }
+        
+        // Dessiner les confettis
+        function drawConfetti() {
+            for (let i = game.confetti.length - 1; i >= 0; i--) {
+                const confetto = game.confetti[i];
+                
+                ctx.save();
+                ctx.globalAlpha = confetto.life;
+                ctx.translate(confetto.x, confetto.y);
+                ctx.rotate(confetto.rotation * Math.PI / 180);
+                
+                // Dessiner différentes formes
+                ctx.fillStyle = confetto.color;
+                if (Math.random() > 0.5) {
+                    // Rectangle
+                    ctx.fillRect(-confetto.size/2, -confetto.size/2, confetto.size, confetto.size);
+                } else {
+                    // Cercle
+                    ctx.beginPath();
+                    ctx.arc(0, 0, confetto.size/2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Effet de brillance
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.fillRect(-confetto.size/4, -confetto.size/4, confetto.size/2, confetto.size/2);
+                
+                ctx.restore();
+                
+                // Mettre à jour la physique
+                confetto.x += confetto.speedX;
+                confetto.y += confetto.speedY;
+                confetto.rotation += confetto.rotationSpeed;
+                confetto.speedY += confetto.gravity;
+                confetto.life -= confetto.decay;
+                
+                // Rebond sur le sol
+                if (confetto.y > canvas.height - confetto.size) {
+                    confetto.y = canvas.height - confetto.size;
+                    confetto.speedY *= -confetto.bounce;
+                    confetto.speedX *= 0.8; // Friction
+                    confetto.rotationSpeed *= 0.8;
+                }
+                
+                // Rebond sur les côtés
+                if (confetto.x < 0 || confetto.x > canvas.width) {
+                    confetto.speedX *= -0.7;
+                    confetto.x = Math.max(0, Math.min(canvas.width, confetto.x));
+                }
+                
+                // Supprimer les confettis morts ou hors écran
+                if (confetto.life <= 0 || (confetto.y > canvas.height + 50 && confetto.speedY > 0)) {
+                    game.confetti.splice(i, 1);
+                }
+            }
+        }
+        
+        // Réinitialiser la balle
+        function resetBall() {
+            if (game.gameWon) return;
+            game.ball.x = canvas.width / 2;
+            game.ball.y = canvas.height / 2;
+            game.ball.radius = gameCustomization.ballSize;
+            game.ball.speedX = Math.random() > 0.5 ? gameCustomization.ballSpeed : -gameCustomization.ballSpeed;
+            game.ball.speedY = (Math.random() - 0.5) * 4;
+            game.pointStartTime = Date.now(); // Réinitialiser le timer
+            game.accelerationFactor = 1; // Réinitialiser l'accélération
+            ballTrail = []; // Réinitialiser la traînée
+        }
+        
+        // Boucle de jeu
+        function gameLoop() {
+            if (document.getElementById('gameArea').style.display === 'none') return;
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Démarrer avec le menu principal
+        showMainMenu();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96c207ed663c98a1',t:'MTc1NDY4Nzc0Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
